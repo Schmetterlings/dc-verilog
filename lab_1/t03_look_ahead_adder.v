@@ -1,4 +1,3 @@
-// Performed by: Marut Kamil
 // Task 3: Implement using components from comp_lib.v a 4-bit carry 
 // look-ahead adder. Implement it with the idea of sharing gates. 
 // Prove correctness of the design by applying appropriate test vectors.
@@ -9,79 +8,60 @@
 `timescale 1ns/100ps
 `include "comp_lib.v"
 
-module OR2(Y, A, B);
+module XOR(Y,A,B);
 output Y;
-input A, B;
+input A,B;
+wire w1,w2,w3;//wires
+NAND2 G1(.Y(w1), .A(A), .B(B));
+NAND2 G2(.Y(w3), .A(A), .B(w1));
+NAND2 G3(.Y(w2), .A(w1), .B(B));
+NAND2 G4(.Y(Y), .A(w3), .B(w2));
 
-NAND2 N1(.Y(Y), .A(~A), .B(~B));
 endmodule
 
-module OR3(Y, A, B, C);
+module OR(Y,A,B);
 output Y;
-input A, B, C;
+input A,B;
+wire nA,nB;
+NOT g1(.Y(nA),.A(A));
+NOT G2(.Y(nB),.A(B));
+NAND2 G3(.Y(Y), .A(nA), .B(nB));
 
-NAND3 N1(.Y(Y), .A(~A), .B(~B), .C(~C));
 endmodule
 
-module OR4(Y, A, B, C, D);
-output Y;
-input A, B, C, D;
-
-NAND4 N1(.Y(Y), .A(~A), .B(~B), .C(~C), .D(~D));
-endmodule
-
-module OR5(Y, A, B, C, D, E);
-output Y;
-input A, B, C, D, E;
-
-NAND5 N1(.Y(Y), .A(~A), .B(~B), .C(~C), .D(~D), .E(~E));
-endmodule
-
-module XOR2(Y, A, B);
-output Y;
-input A, B;
-wire LHS, RHS;
-
-NAND2 G2(.Y(LHS), .A(A), .B(~B));
-NAND2 G3(.Y(RHS), .A(~A), .B(B));
-NAND2 G4(.Y(Y), .A(LHS), .B(RHS));
-endmodule
-
-// Carry generate and propagate module
-module C_GP(G, P, A, B);
-output G;  // Carry generate
+//Carry generate and propagate module
+module C_GP(nG, P, A, B);
+output nG; // Carry not generate
 output P;  // Carry propagate
 input  A, B;
 wire nG;
+NAND2 G1(.Y(nG), .A(A), .B(B));
+XOR G2(.Y(P),.A(A),.B(B));
 
-assign G = A & B;
-assign P = A ^ B;
 endmodule
 
 // 4-bit carry look-ahead adder module
 module ADD_FAST(CO, S, A, B, CI);
-output CO;
-output [3:0] S;
+output CO; 
+output [3:0] S; 
 input [3:0] A, B;
 input CI;
+wire g0,g1,g2,g3,p0,p1,p2,p3,c1,c2,c3,w1,w2,w3,w4;
+C_GP GP0(.nG(ng0), .P(p0), .A(A[0]), .B(B[0]));
+C_GP GP1(.nG(ng1), .P(p1), .A(A[1]), .B(B[1]));
+C_GP GP2(.nG(ng2), .P(p2), .A(A[2]), .B(B[2]));
+C_GP GP3(.nG(ng3), .P(p3), .A(A[3]), .B(B[3]));
+NAND2 nG1(.Y(w1), .A(p0), .B(CI));
+NAND2 nG2(.Y(c1), .A(ng0), .B(w1));
+NAND2 nG3(.Y(w2), .A(p1), .B(c1));
+NAND2 nG4(.Y(c2), .A(ng1), .B(w2));
+NAND2 nG5(.Y(w3), .A(p2), .B(c2));
+NAND2 nG6(.Y(CO), .A(ng3), .B(w1));
+XOR G1(.Y(S[0]),.A(p0),.B(CI));
+XOR G2(.Y(S[1]),.A(p1),.B(c1));
+XOR G3(.Y(S[2]),.A(p2),.B(c2));
+XOR G4(.Y(S[3]),.A(p3),.B(CO));
 
-wire p0, p1, p2, p3, g0, g1, g2, g3, c0, c1, c2, c3;
-
-C_GP GP0(.G(g0), .P(p0), .A(A[0]), .B(B[0]));
-C_GP GP1(.G(g1), .P(p1), .A(A[1]), .B(B[1]));
-C_GP GP2(.G(g2), .P(p2), .A(A[2]), .B(B[2]));
-C_GP GP3(.G(g3), .P(p3), .A(A[3]), .B(B[3]));
-
-assign c0 = CI,
-       c1 = g0 | (p0 & CI),
-       c2 = g1 | (p1 & g0) | (p1 & p0 & CI),
-       c3 = g2 | (p2 & g1) | (p2 & p1 & g0) | (p2 & p1 & p0 & CI),
-       CO = g3 | (p3 & g2) | (p3 & p2 & g1) | (p3 & p2 & p1 & g0) | (p3 & p2 & p1 & p0 & CI);
-
-assign S[0] = p0 ^ c0,
-       S[1] = p1 ^ c1,
-       S[2] = p2 ^ c2,
-       S[3] = p3 ^ c3;
 endmodule 
 
 // 4-bit adder test bench
@@ -99,7 +79,7 @@ ADD_FAST A1(.CO(CO), .S(Y), .A(A), .B(B), .CI(CI));
 // Determine maximal propagation time of designed adder
 initial begin
     $display("\t\tCO a b c d <- A0 A1 A2 A3 + B0 B1 B2 B3");
-    $monitor("%t: %b %b <- %b + %b", $time, CO, Y, A, B);
+    
 
     A = 4'b0;
     B = 4'b0;
@@ -108,11 +88,13 @@ initial begin
     
     repeat(15) begin
         #10 A = A + 1;
+        #10;
 
         if (mpt == 0)
             mpt = $time;
 
         #10 B = B + 1;
+        #10;
     end
 
     #10 $display("Maximal propagation time: %t", mpt);
@@ -120,6 +102,7 @@ initial begin
 end
 
 initial begin
+    $monitor("%t: %b %b <- %b + %b", $time, CO, Y, A, B);
     $dumpfile("add_4_fast.vcd");
     $dumpvars(0, ADD_4_TEST);
     $dumpon();
