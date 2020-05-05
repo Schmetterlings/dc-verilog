@@ -54,10 +54,8 @@ output P;  // Carry propagate
 input  A, B;
 wire nG;
 
-NAND2 G1(.Y(nG), .A(A), .B(B));
-NOT N1(.Y(G), .A(nG));
-XOR2 X1(.Y(P), .A(A), .B(B));
-
+assign G = A & B;
+assign P = A ^ B;
 endmodule
 
 // 4-bit carry look-ahead adder module
@@ -84,7 +82,6 @@ assign S[0] = p0 ^ c0,
        S[1] = p1 ^ c1,
        S[2] = p2 ^ c2,
        S[3] = p3 ^ c3;
-
 endmodule 
 
 // 4-bit adder test bench
@@ -93,6 +90,7 @@ reg [3:0] A, B;
 reg CI;
 wire [3:0] Y;
 wire CO;
+time mpt;
 
 ADD_FAST A1(.CO(CO), .S(Y), .A(A), .B(B), .CI(CI));
 
@@ -101,17 +99,23 @@ ADD_FAST A1(.CO(CO), .S(Y), .A(A), .B(B), .CI(CI));
 // Determine maximal propagation time of designed adder
 initial begin
     $display("\t\tCO a b c d <- A0 A1 A2 A3 + B0 B1 B2 B3");
-    $monitor("%t: %b %b %b %b %b <- %b %b %b %b + %b %b %b %b", $time, CO, Y[3], Y[2], Y[1], Y[0], A[3], A[2], A[1], A[0], B[3], B[2], B[1], B[0]);
+    $monitor("%t: %b %b <- %b + %b", $time, CO, Y, A, B);
 
     A = 4'b0;
     B = 4'b0;
     CI = 0;
-
-    repeat(15) begin 
+    mpt = 0;
+    
+    repeat(15) begin
         #10 A = A + 1;
+
+        if (mpt == 0)
+            mpt = $time;
+
         #10 B = B + 1;
     end
 
+    #10 $display("Maximal propagation time: %t", mpt);
     $finish;
 end
 
