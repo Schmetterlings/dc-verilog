@@ -87,7 +87,12 @@ initial begin
 end
 
 //State change reporter ...
+reg [1:0] last_Q;
 
+always @({UUT.nextQ}) begin
+    $display("State change: %d -> %d  F1: %d F2: %d, T1:%d  T2: %d", last_Q, UUT.nextQ,F1,F2,T1,T2);
+    last_Q = UUT.nextQ;
+end
 //Room temperature model
 integer T;
 integer CYCLES_CNT;
