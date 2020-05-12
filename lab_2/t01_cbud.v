@@ -56,10 +56,15 @@ CBUD UUT(.CLK(CLK), .CLR(CLR), .DIR(DIR), .Q(Q));
 // Main test vector generator
 initial begin
     DIR = 1'b0;
-    CLR = 1'b1;   
-    repeat(10) @(negedge CLK);
+    CLR = 1'b1;
+    repeat(10) @(negedge CLK); 
     CLR = 1'b0;
     repeat(10) @(negedge CLK);
+
+    // Change direction
+    DIR = 1'b1;
+    repeat(10) @(negedge CLK);
+
     $finish;
 end
 
@@ -73,7 +78,11 @@ initial begin
     $dumpfile("cbud.vcd");
     $dumpvars;
     $dumpon;
-    $monitor("%b:%b -> %b", UUT.Q, DIR, UUT.A);
+    $monitor("%b:%b --> %b", UUT.A, DIR, Q); // Cur:Dir --> Next
+end
+
+always @(DIR) begin
+    $display("Direction change.");
 end
 
 endmodule
