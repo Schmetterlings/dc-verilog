@@ -22,11 +22,10 @@ wire [3:0] D_T;
 
 RAM_16X4 M1(.nCS(nCS), .nWE(nWE), .nOE(nOE), .A(A), .D(D), .Q(D_T));
 
+// The correct memory is loaded into D_T
+// but for some reason the continuous assignment
+// does not assign the D_T to D
 assign #10 D = (~nOE && nWE) ? D_T : 4'bz;
-
-// always @(D_T) begin
-//     $display("D_T");
-// end
 
 always @(A or D or D_T) begin
     $display("%m: D -> %b, D_T -> %b", D, D_T);
@@ -59,9 +58,7 @@ initial begin
     #10;
     nWE = 1'b0;
     #10;
-    MEM_WR(4'b0101, 4'b1111);
-    #10;
-    nWE = 1'b0;
+    MEM_WR(4'b0101, 4'b1110);
     #10;
     MEM_WR(4'b1010, 4'b0001);
     #10;
@@ -72,6 +69,8 @@ initial begin
     nOE = 1'b0;
     #10;
     MEM_RD(4'b0101, D_RD);
+    #10;
+    MEM_RD(4'b1010, D_RD);
     #10;
     nOE = 1'b1;
     #10;
