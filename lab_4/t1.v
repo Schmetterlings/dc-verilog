@@ -41,7 +41,8 @@ SN7442 CTRL_DEC1(.Y({DUMMY_1, DUMMY_0, nCTRL}), .I({1'b0, Q_CTRL[3:1]}));
 //Possibly this help you to generate GATE_EN
 SN7474 CTRL_G_CTRL(.CLK(1'b0), .nS(nCTRL[0]), .nR(nCTRL[5]), .Q(GATE_EN), .nQ());
 //Generate LD and CNT_CLR note required signals polarity
-SN7474 CTRL_G_LD(.CLK(1'b0), .nS(nCTRL[6]), .nR(nCTRL[7]), .Q(LD), .nQ());
+not #2(nCNT_CLR,CNT_CLR);
+SN7474 CTRL_G_LD(.CLK(1'b0), .nS(nCTRL[6]), .nR(nCNT_CLR), .Q(), .nQ(LD));
 SN7474 CTRL_G_CNT(.CLK(1'b0), .nS(nCTRL[7]), .nR(nCTRL[0]), .Q(CNT_CLR), .nQ());
 assign nDONE = nCTRL[7]; //End of measurement notification
 
