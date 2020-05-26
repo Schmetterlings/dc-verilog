@@ -26,7 +26,7 @@ wire CNT_CLR; // Counter clear
 wire LD; // Load latch
 
 initial begin
-    $monitor("QH: %b, QD: %b, QU: %b", QH, QD, QU);
+    //$monitor("QH: %b, QD: %b, QU: %b", QH, QD, QU);
 end
 
 // Counters and latches
@@ -68,14 +68,14 @@ reg CLK;  //Reference clock
 reg CLR;
 wire F_IN; //Measured frequency 
 output [3:0] QH, QD, QU; //Measurement result
-wire OVF;
+wire Q_OVF;
 wire nDONE;
 reg [31:0] F_SET;
 
 FM_OVF UUT(
     .CLK(CLK), .CLR(CLR), 
     .F_IN(F_IN), 
-    .QH(QH), .QD(QD), .QU(QU), .Q_OVF(OVF) ,
+    .QH(QH), .QD(QD), .QU(QU), .Q_OVF(Q_OVF) ,
     .nDONE(nDONE));
 
 FREQ_GEN FG(.CLK(F_IN), .F(F_SET));
@@ -89,11 +89,14 @@ initial begin
     F_SET = 32'd1045;
     repeat(2) @(negedge nDONE);    
     repeat(3) @(posedge CLK);
+    F_SET = 32'd997;
+    repeat(2) @(negedge nDONE);
+    repeat(3) @(posedge CLK);
     $finish;
 end
 
 always @(negedge nDONE)
-    $display("Measured frequency : %b : %d%d%d ", OVF, QH, QD, QU);
+    $display("Measured frequency : %b : %d%d%d ", Q_OVF, QH, QD, QU);
 
 initial begin
     CLK = 1'b0;
