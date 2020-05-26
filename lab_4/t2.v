@@ -52,7 +52,7 @@ SN7490 C3(.CLK(QC_D[3]), .R0(CNT_CLR), .R9(1'b0), .Q(QC_H));
 // Overflow detection
 wire nCNT_CLR;
 not #2(nCNT_CLR, CNT_CLR);
-SN7472 OVF_DETECT(.CLK(QC_H[3]), .nR(nCNT_CLR), .nS(1'b1), .J(1'b1), .K(1'b0), .Q(OVF), .nQ());
+SN7474 OVF_DETECT(.CLK(QC_H[3]), .nR(nCNT_CLR), .nS(1'b1), .D(1'b1), .Q(OVF), .nQ());
 
 // Latch - quad D flip-flop triggered on falling edge
 SN7474_4 L1(.CLK(LD), .nCLR(1'b1), .D(QC_U), .Q(QU));
