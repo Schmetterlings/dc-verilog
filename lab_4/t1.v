@@ -1,4 +1,4 @@
-// Performed by: Marut Kamil
+// Perforemd by: {Full Last,First Name}
 //
 // Task 1. Design a simple frequency meter control unit using the prepared framework. 
 // The unit should operate in a closed-loop consisting of opening the gate for a period 
@@ -9,6 +9,7 @@
 // by output 7. After that cycle starts over. 
 // Is the measured result correct? 
 // Is the result retained continuously until the next cycle finishes?
+//
 
 `timescale 1ns/100ps
 
@@ -26,38 +27,29 @@ wire DUMMY_0, DUMMY_1;
 wire GATE_EN; //Gate
 wire G_F_IN; //Gated F_IN
 wire CNT_CLR; //Counter clear
-wire LD; //Load latch 
+wire LD; //Load latch
 
-// Counters and latches
+//Counters and latches
 wire [3:0] QC_H, QC_D, QC_U;
 
-// Debug
-initial begin
-    //$monitor("G_F_IN: %b, QC_U: %b, QC_D: %b, QC_H: %b", G_F_IN, QC_U, QC_D, QC_H);
-    //$monitor("nCTRL: %b", nCTRL);
-    //$monitor("nDONE: %b", nDONE);
-    //$monitor("Q_CTRL: %b", Q_CTRL);
-end
-
-// Control unit
+//Control unit
 nand #2(G_F_IN, GATE_EN, F_IN); //Input signal gate
-// Asynchronous binary counter
-SN7493 CTRL_CNT1(.CLK(CLK), .R0(CLR), .Q(Q_CTRL)); 
-// 1 of 10 decoder active low
+//Asynchronous binary counter
+//Asynchronous zero - R0 -> Q = 4'd0
+SN7493 CTRL_CNT1(.CLK(CLK), .R0(CLR), .Q(Q_CTRL));
 SN7442 CTRL_DEC1(.Y({DUMMY_1, DUMMY_0, nCTRL}), .I({1'b0, Q_CTRL[3:1]}));
-// Possibly this help you to generate GATE_EN - MS D-type flip flop
-SN7474 CTRL_G_CTRL(.CLK(1'b0), .nS(~nDONE), .nR(nDONE), .Q(GATE_EN), .nQ(DUMMY_0));
-// Generate LD and CNT_CLR note required signals polarity
-assign LD = CLK;
-assign CNT_CLR = CLR;
-
+//Possibly this help you to generate GATE_EN
+SN7474 CTRL_G_CTRL(.CLK(1'b0), .nS(nCTRL[0]), .nR(nCTRL[5]), .Q(GATE_EN), .nQ());
+//Generate LD and CNT_CLR note required signals polarity
+SN7474 CTRL_G_LD(.CLK(1'b0), .nS(nCTRL[6]), .nR(nCTRL[7]), .Q(LD), .nQ());
+SN7474 CTRL_G_CNT(.CLK(1'b0), .nS(nCTRL[7]), .nR(nCTRL[0]), .Q(CNT_CLR), .nQ());
 assign nDONE = nCTRL[7]; //End of measurement notification
 
-// Asynchronous BCD Counter
+//Counter
 SN7490 C1(.CLK(G_F_IN), .R0(CNT_CLR), .R9(1'b0), .Q(QC_U));
 SN7490 C2(.CLK(QC_U[3]), .R0(CNT_CLR), .R9(1'b0), .Q(QC_D));
 SN7490 C3(.CLK(QC_D[3]), .R0(CNT_CLR), .R9(1'b0), .Q(QC_H));
-// Latch - quad d flip-flop triggered on falling edge
+//Latch
 SN7474_4 L1(.CLK(LD), .nCLR(1'b1), .D(QC_U), .Q(QU));
 SN7474_4 L2(.CLK(LD), .nCLR(1'b1), .D(QC_D), .Q(QD));
 SN7474_4 L3(.CLK(LD), .nCLR(1'b1), .D(QC_H), .Q(QH));
@@ -94,7 +86,7 @@ initial begin
 end
 
 always @(negedge nDONE)
-    $display("Measured frequency: %d%d%d ", QH, QD, QU);
+    $display("Measured frequency : %d%d%d ", QH, QD, QU);
 
 initial begin
     CLK = 1'b0;
