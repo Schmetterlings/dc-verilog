@@ -62,7 +62,7 @@ SN74151 CTRL_M_LD(
     .Y(CTRL_LD), 
     .SEL(CTRL_Q[2:0]), 
     .I({8'b00001001})); 
-nand #2(CTRL_LD, 1'b1, 1'b1); //Build apropriate circuit
+ //Build apropriate circuit
 
 //Generate latch pulse when CTRL_Q = 7
 nor #2(LD, nCTRL_Q[2], nCTRL_Q[1], nCTRL_Q[0]);
@@ -106,7 +106,7 @@ PERIOD_M PM_UUT(
     .nDONE(nDONE));
 
 initial begin
-    F_SET = 32'd145;
+    F_SET = 32'd145_00;
     nCLR = 1'b0;
     repeat(2) @(posedge CLK);
     nCLR = 1'b1;    
@@ -151,4 +151,3 @@ initial begin
 end
 
 endmodule
-
