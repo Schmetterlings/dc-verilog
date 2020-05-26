@@ -61,7 +61,7 @@ SN74151 CTRL_M(
 SN74151 CTRL_M_LD(
     .Y(CTRL_LD), 
     .SEL(CTRL_Q[2:0]), 
-    .I({8'b00001001})); 
+    .I({7'b0000100,F_IN_Q})); 
  //Build apropriate circuit
 
 //Generate latch pulse when CTRL_Q = 7
@@ -135,6 +135,7 @@ initial begin
 end
 
 always @(negedge nDONE)
+    #10 
     $display("Measured frequency : %b : %d%d%d ", OVF, QH, QD, QU);
 
 initial begin
